@@ -162,7 +162,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
         <section className="card flex flex-col p-5" aria-label="Top students">
           <div className="flex items-baseline justify-between">
             <h2 className="card-title">Top students</h2>
-            <Link href="/leaderboard" className="flex items-center gap-1 text-xs font-semibold text-denim hover:underline">
+            <Link href="/leaderboard" className="flex items-center gap-1 text-xs font-semibold text-denim hover:underline print:hidden">
               Leaderboard <IconArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>

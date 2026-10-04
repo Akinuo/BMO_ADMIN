@@ -153,5 +153,6 @@ a, button, input, select, summary, label { touch-action: manipulation; }
   .tbl th svg { display: none; }
   .print-landscape { page: wide; }
   .lesson-rail > li { break-inside: avoid; }
+  .grid > * { min-width: 0; }
   .tbl .w-52, .tbl .w-16, .tbl .w-20 { width: auto !important; }
 }
