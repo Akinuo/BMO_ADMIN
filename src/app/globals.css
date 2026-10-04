@@ -143,4 +143,11 @@ a, button, input, select, summary, label { touch-action: manipulation; }
   .truncate { white-space: normal; overflow: visible; }
   .grow-x, .grow-y, .fade-in { animation: none !important; }
   a { color: inherit !important; text-decoration: none !important; }
+
+  /* Tables and the lesson timeline are longer than a page: let them flow across pages instead of jumping to a new one */
+  .card:has(.tbl), .card:has(.lesson-rail) { break-inside: auto; }
+  .overflow-x-auto { overflow: visible !important; }
+  .tbl th, .tbl td { white-space: normal; }
+  .tbl th svg { display: none; }
+  .tbl .w-52, .tbl .w-16, .tbl .w-20 { width: auto !important; }
 }

@@ -188,11 +188,11 @@ export default function StudentsTable({
               <tr>
                 <SortHeader label="Rank" k="rank" sortKey={sortKey} dir={dir} onSort={onSort} className="w-16 sm:w-20" />
                 <SortHeader label="Student" k="name" sortKey={sortKey} dir={dir} onSort={onSort} />
-                <SortHeader label="Progress" k="progress" sortKey={sortKey} dir={dir} onSort={onSort} className="hidden w-52 md:table-cell" />
-                <SortHeader label="Lessons" k="lessons" sortKey={sortKey} dir={dir} onSort={onSort} className="hidden xl:table-cell" />
-                <SortHeader label="Assessment" k="assessment" sortKey={sortKey} dir={dir} onSort={onSort} className="hidden xl:table-cell" />
-                <th className="hidden md:table-cell">Status</th>
-                <SortHeader label="Last active" k="activity" sortKey={sortKey} dir={dir} onSort={onSort} className="hidden xl:table-cell" />
+                <SortHeader label="Progress" k="progress" sortKey={sortKey} dir={dir} onSort={onSort} className="hidden w-52 md:table-cell print:table-cell" />
+                <SortHeader label="Lessons" k="lessons" sortKey={sortKey} dir={dir} onSort={onSort} className="hidden xl:table-cell print:table-cell" />
+                <SortHeader label="Assessment" k="assessment" sortKey={sortKey} dir={dir} onSort={onSort} className="hidden xl:table-cell print:table-cell" />
+                <th className="hidden md:table-cell print:table-cell">Status</th>
+                <SortHeader label="Last active" k="activity" sortKey={sortKey} dir={dir} onSort={onSort} className="hidden xl:table-cell print:table-cell" />
               </tr>
             </thead>
             <tbody>
@@ -214,17 +214,17 @@ export default function StudentsTable({
                       </div>
                     </div>
                   </td>
-                  <td className="hidden md:table-cell">
+                  <td className="hidden md:table-cell print:table-cell">
                     <div className="flex items-center gap-2.5">
                       <ProgressBar value={s.progress} />
                       <span className="w-10 shrink-0 text-right text-xs font-semibold text-ink">{s.progress}%</span>
                     </div>
                     <div className="mt-1 text-[11px] text-muted">{s.steps} of {totalSteps} steps</div>
                   </td>
-                  <td className="hidden whitespace-nowrap text-ink xl:table-cell">
+                  <td className="hidden whitespace-nowrap text-ink xl:table-cell print:table-cell">
                     <b className="font-semibold">{s.lessons}</b> <span className="text-muted">/ {totalLessons}</span>
                   </td>
-                  <td className="hidden whitespace-nowrap xl:table-cell">
+                  <td className="hidden whitespace-nowrap xl:table-cell print:table-cell">
                     {s.assessment ? (
                       <div>
                         <b className="font-semibold text-ink">{s.assessment.score}</b>
@@ -234,15 +234,15 @@ export default function StudentsTable({
                       <span className="text-muted">Not taken</span>
                     )}
                   </td>
-                  <td className="hidden md:table-cell">
+                  <td className="hidden md:table-cell print:table-cell">
                     <div className="flex flex-wrap items-center gap-1">
                       <StatusChip status={s.status} />
                       {s.stalled && <StalledChip />}
                     </div>
                     {/* the Last active column only has room from xl up */}
-                    <div className="mt-1 whitespace-nowrap text-[11px] text-muted xl:hidden">{s.lastActivity ? timeAgo(s.lastActivity, nowMs) : 'No activity yet'}</div>
+                    <div className="mt-1 whitespace-nowrap text-[11px] text-muted xl:hidden print:hidden">{s.lastActivity ? timeAgo(s.lastActivity, nowMs) : 'No activity yet'}</div>
                   </td>
-                  <td className="hidden whitespace-nowrap text-muted xl:table-cell" title={s.lastActivity ? formatDate(s.lastActivity) : 'No steps completed yet'}>
+                  <td className="hidden whitespace-nowrap text-muted xl:table-cell print:table-cell" title={s.lastActivity ? formatDate(s.lastActivity) : 'No steps completed yet'}>
                     {s.lastActivity ? timeAgo(s.lastActivity, nowMs) : <span className="text-muted/70">—</span>}
                   </td>
                 </tr>
