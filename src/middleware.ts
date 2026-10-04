@@ -43,6 +43,11 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(cb)
   }
 
+  // The sign-in / sign-out routes manage the session cookies themselves. Running the session refresh
+  // here as well can strip the PKCE code-verifier cookie out of the callback request when the browser
+  // still holds an old, expired session, and then the Google sign-in fails with "code verifier" errors.
+  if (pathname.startsWith('/auth/')) return next()
+
   // Keeps the session cookie fresh while the admin browses.
   let res = next()
   const supabase = createServerClient(url, key, {
