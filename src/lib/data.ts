@@ -3,7 +3,7 @@ import { ACTIVITY_DAYS, TIMEZONE } from './config'
 import { requireAdmin } from './auth'
 import { createClient } from './supabase/server'
 import { buildStudents, summarize } from './students'
-import type { DailyActivityRow, LessonStatRow, StepDetailRow, StudentStatRow } from './types'
+import type { AdminRow, DailyActivityRow, LessonStatRow, StepDetailRow, StudentStatRow } from './types'
 
 type Client = ReturnType<typeof createClient>
 
@@ -55,4 +55,12 @@ export async function getStudentSteps(userId: string): Promise<StepDetailRow[]> 
   const { data, error } = await supabase.rpc('admin_student_steps', { p_user: userId })
   if (error) throw new Error(`admin_student_steps: ${error.message}`)
   return (data ?? []) as StepDetailRow[]
+}
+
+export async function getAdmins(): Promise<AdminRow[]> {
+  await requireAdmin()
+  const supabase = createClient()
+  const { data, error } = await supabase.rpc('admin_list_admins')
+  if (error) throw new Error(`admin_list_admins: ${error.message}`)
+  return (data ?? []) as AdminRow[]
 }

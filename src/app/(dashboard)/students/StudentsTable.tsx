@@ -1,6 +1,6 @@
 'use client'
 import Link from 'next/link'
-import { useMemo, useState } from 'react'
+import { useDeferredValue, useMemo, useState } from 'react'
 import { IconChevron, IconDownload, IconSearch, IconSortDown, IconSortUp } from '@/components/icons'
 import { EmptyState, ProgressBar, RankBadge, StalledChip, StatusChip, StudentLink } from '@/components/ui'
 import { PAGE_SIZE } from '@/lib/config'
@@ -73,11 +73,13 @@ export default function StudentsTable({
     [students],
   )
 
+  // Keep typing instant on big lists: filtering runs on a deferred copy of the search text.
+  const deferredQuery = useDeferredValue(query)
   const rows = useMemo(() => {
-    const q = query.trim().toLowerCase()
+    const q = deferredQuery.trim().toLowerCase()
     const filtered = students.filter(s => matches(s, filter) && (!q || s.name.toLowerCase().includes(q) || (s.email ?? '').toLowerCase().includes(q)))
     return sortStudents(filtered, sortKey, dir)
-  }, [students, filter, query, sortKey, dir])
+  }, [students, filter, deferredQuery, sortKey, dir])
 
   const pages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE))
   const safePage = Math.min(page, pages - 1)

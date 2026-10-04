@@ -75,3 +75,11 @@ export const STATUS_LABEL: Record<StudentStatus, string> = {
   completed: 'Course complete',
   certified: 'Certified',
 }
+
+export type AdminRow = {
+  user_id: string
+  email: string | null
+  display_name: string | null
+  joined_at: string
+  last_sign_in_at: string | null
+}

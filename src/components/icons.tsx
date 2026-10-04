@@ -199,3 +199,12 @@ export function SpoolMark({ className = '' }: { className?: string }) {
     </svg>
   )
 }
+
+export function IconShield({ className }: P) {
+  return (
+    <svg {...S} className={className} aria-hidden="true">
+      <path d="M12 3.5l7 2.6v5.6c0 4.2-2.8 7.2-7 8.8-4.2-1.6-7-4.6-7-8.8V6.1l7-2.6z" />
+      <path d="M9 12l2.2 2.2L15.5 10" />
+    </svg>
+  )
+}

@@ -33,6 +33,8 @@ const config = {
   reactStrictMode: true,
   poweredByHeader: false,
   eslint: { ignoreDuringBuilds: true },
+  compress: true,
+  experimental: { optimizePackageImports: ['@supabase/supabase-js'] },
   async headers() {
     const securityHeaders = [
       { key: 'Content-Security-Policy', value: csp },
@@ -42,11 +44,17 @@ const config = {
       { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
       { key: 'Cross-Origin-Opener-Policy', value: 'same-origin-allow-popups' },
       { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()' },
-      // This site lists student emails — keep it out of search engines and caches.
+      // This site lists student emails — keep it out of search engines.
       { key: 'X-Robots-Tag', value: 'noindex, nofollow, noarchive' },
-      { key: 'Cache-Control', value: 'private, no-store' },
     ]
-    return [{ source: '/:path*', headers: securityHeaders }]
+    return [
+      { source: '/:path*', headers: securityHeaders },
+      // Pages and data are never cached (they contain student emails)...
+      // ...but hashed build assets (JS/CSS/fonts) and images are public and safe to cache hard.
+      { source: '/((?!_next/static|_next/image|logo-mark.png|icon.png).*)', headers: [{ key: 'Cache-Control', value: 'private, no-store' }] },
+      { source: '/_next/static/:path*', headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }] },
+      { source: '/:file(logo-mark.png|icon.png)', headers: [{ key: 'Cache-Control', value: 'public, max-age=86400, stale-while-revalidate=604800' }] },
+    ]
   },
 }
 export default config

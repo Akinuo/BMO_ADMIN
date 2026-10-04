@@ -3,12 +3,13 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import type { ReactNode } from 'react'
-import { IconLogout, IconOverview, IconTrophy, IconUsers, SpoolMark } from './icons'
+import { IconLogout, IconOverview, IconShield, IconTrophy, IconUsers, SpoolMark } from './icons'
 
 const NAV = [
   { href: '/', label: 'Overview', Icon: IconOverview },
   { href: '/students', label: 'Students', Icon: IconUsers },
   { href: '/leaderboard', label: 'Leaderboard', Icon: IconTrophy },
+  { href: '/admins', label: 'Admins', Icon: IconShield },
 ]
 
 function isActive(path: string, href: string) {
