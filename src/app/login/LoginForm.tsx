@@ -51,6 +51,9 @@ export default function LoginForm() {
     setMsg('')
     const f = new FormData(e.currentTarget)
     const supabase = await loading
+    // Drop any session already in this browser first, so the account typed here is the one you end up in
+    // (never a leftover login of a different account).
+    await supabase.auth.signOut({ scope: 'local' })
     const { error } = await supabase.auth.signInWithPassword({
       email: String(f.get('email')).trim(),
       password: String(f.get('password')),
@@ -70,9 +73,14 @@ export default function LoginForm() {
     setGoogleBusy(true)
     setMsg('')
     const supabase = await loading
+    await supabase.auth.signOut({ scope: 'local' })
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: `${location.origin}/auth/callback?next=${encodeURIComponent(next)}` },
+      options: {
+        redirectTo: `${location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+        // Always ask Google which account to use, instead of silently reusing whichever one the browser remembers.
+        queryParams: { prompt: 'select_account' },
+      },
     })
     if (error) {
       setGoogleBusy(false)

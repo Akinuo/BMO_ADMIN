@@ -74,7 +74,6 @@ export async function middleware(req: NextRequest) {
     return redirectTo(login)
   }
 
-  if (user && pathname === '/login') return redirectTo(new URL('/', req.url))
 
   return res
 }
