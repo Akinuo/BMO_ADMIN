@@ -189,15 +189,15 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
         </section>
       </div>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-3 print:grid-cols-3">
+      <div className="mt-4 grid gap-4 lg:grid-cols-3">
         {/* Lesson funnel */}
-        <section className="card p-5 lg:col-span-2 print:col-span-2" aria-label="Lesson completion">
+        <section className="card p-5 lg:col-span-2" aria-label="Lesson completion">
           <h2 className="card-title">Lesson completion</h2>
           <p className="mb-4 text-xs text-muted">Lessons unlock in order, so the bars show where students slow down.</p>
           {lessons.length ? <LessonFunnel lessons={lessons} totalStudents={summary.total} /> : <EmptyState title="No lessons found" />}
         </section>
 
-        <div className="grid content-start gap-4">
+        <div className="grid content-start gap-4 print:grid-cols-2">
         {/* Needs a nudge */}
         <section className="card flex flex-col p-5" aria-label="Students who may need a nudge">
           <div className="flex items-baseline justify-between">
