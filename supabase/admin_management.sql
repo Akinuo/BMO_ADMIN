@@ -129,3 +129,60 @@ revoke all on function public.admin_remove_admin(uuid)    from public, anon;
 grant execute on function public.admin_list_admins()      to authenticated;
 grant execute on function public.admin_add_admin(text)    to authenticated;
 grant execute on function public.admin_remove_admin(uuid) to authenticated;
+
+-- ─────────────────────────────────────────────────────────────────────────────
+-- 4. Email suggestions for the "Add admin" box (type-ahead)
+--    Returns up to 8 confirmed, non-admin accounts whose email or name matches what was typed.
+--    Needs at least 2 characters. Prefix matches come first.
+-- ─────────────────────────────────────────────────────────────────────────────
+create or replace function public.admin_search_accounts(p_query text)
+returns table (
+  user_id      uuid,
+  email        text,
+  display_name text
+)
+language plpgsql stable security definer
+set search_path = public, auth
+as $$
+#variable_conflict use_column
+declare
+  v_q    text := lower(btrim(coalesce(p_query, '')));
+  v_like text;
+begin
+  if not public.is_admin() then
+    raise exception 'not authorized' using errcode = '42501';
+  end if;
+
+  if length(v_q) < 2 then
+    return;
+  end if;
+
+  -- escape LIKE wildcards so what the admin types is matched literally
+  v_like := replace(replace(replace(v_q, '\', '\\'), '%', '\%'), '_', '\_');
+
+  return query
+  select u.id,
+         u.email::text,
+         coalesce(
+           nullif(u.raw_user_meta_data->>'display_name', ''),
+           nullif(u.raw_user_meta_data->>'full_name', ''),
+           nullif(u.raw_user_meta_data->>'name', '')
+         )
+  from auth.users u
+  left join public.profiles pr on pr.id = u.id
+  where u.deleted_at is null
+    and u.email is not null
+    and u.email_confirmed_at is not null
+    and coalesce(pr.role, 'student') <> 'admin'
+    and (
+      lower(u.email) like v_like || '%' escape '\'
+      or lower(u.email) like '%' || v_like || '%' escape '\'
+      or lower(coalesce(u.raw_user_meta_data->>'display_name', u.raw_user_meta_data->>'full_name', u.raw_user_meta_data->>'name', '')) like '%' || v_like || '%' escape '\'
+    )
+  order by (lower(u.email) like v_like || '%' escape '\') desc, u.email
+  limit 8;
+end
+$$;
+
+revoke all on function public.admin_search_accounts(text) from public, anon;
+grant execute on function public.admin_search_accounts(text) to authenticated;

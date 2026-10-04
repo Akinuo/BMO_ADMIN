@@ -43,3 +43,16 @@ export async function removeAdmin(_prev: ActionState, formData: FormData): Promi
   revalidatePath('/admins')
   return { ok: true, message: 'Admin access removed.' }
 }
+
+export type AccountSuggestion = { email: string; name: string | null }
+
+/** Type-ahead for the Add admin box. Never throws; returns [] on any problem. */
+export async function searchAccounts(query: string): Promise<AccountSuggestion[]> {
+  await requireAdmin()
+  const q = String(query ?? '').trim().slice(0, 100)
+  if (q.length < 2) return []
+  const supabase = createClient()
+  const { data, error } = await supabase.rpc('admin_search_accounts', { p_query: q })
+  if (error || !Array.isArray(data)) return []
+  return (data as { email: string; display_name: string | null }[]).map(r => ({ email: r.email, name: r.display_name }))
+}
