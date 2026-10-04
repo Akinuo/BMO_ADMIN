@@ -32,6 +32,17 @@ export async function middleware(req: NextRequest) {
     return r
   }
 
+  // A sign-in code that lands on any page other than the callback (Supabase falls back to the site
+  // root when the redirect URL isn't on its allow-list) is handed to the callback, so the sign-in
+  // finishes and the code leaves the address bar. The callback itself is excluded: no redirect loop.
+  const code = req.nextUrl.searchParams.get('code')
+  if (req.method === 'GET' && code && pathname !== '/auth/callback') {
+    const cb = new URL('/auth/callback', req.url)
+    cb.searchParams.set('code', code)
+    if (pathname !== '/') cb.searchParams.set('next', pathname)
+    return NextResponse.redirect(cb)
+  }
+
   // Keeps the session cookie fresh while the admin browses.
   let res = next()
   const supabase = createServerClient(url, key, {
