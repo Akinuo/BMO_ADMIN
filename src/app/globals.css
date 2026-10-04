@@ -1,0 +1,112 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    overflow-x: hidden;
+    width: 100%;
+  }
+  body {
+    @apply antialiased bg-chalk text-ink font-sans;
+    overflow-x: hidden;
+    width: 100%;
+  }
+  *, *::before, *::after { box-sizing: border-box; }
+}
+
+:focus-visible {
+  outline: 2px solid #22336B;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@layer components {
+  .btn {
+    @apply inline-flex min-h-[40px] items-center justify-center gap-2
+           rounded bg-denim px-5 py-2 text-sm font-semibold text-white
+           transition-colors duration-150 hover:bg-denim-deep
+           disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98];
+    position: relative;
+  }
+  .btn::after {
+    content: ''; position: absolute; inset: 3px; border-radius: 5px; pointer-events: none;
+    border: 1.5px dashed currentColor; opacity: .3;
+  }
+  .btn-outline {
+    @apply inline-flex min-h-[40px] items-center justify-center gap-2
+           rounded border border-denim/30 bg-paper px-4 py-2 text-sm font-semibold text-denim
+           transition-colors duration-150 hover:border-denim hover:bg-denim-light
+           disabled:cursor-not-allowed disabled:opacity-50 active:scale-[0.98];
+  }
+  .btn-ghost {
+    @apply inline-flex min-h-[40px] items-center justify-center gap-1.5
+           rounded px-3 py-1.5 text-sm font-medium text-muted
+           transition-colors duration-150 hover:bg-denim-light hover:text-denim active:scale-[0.98];
+  }
+  .field {
+    @apply mt-1 block w-full rounded border border-border bg-paper px-3 py-2 text-sm text-ink
+           transition-colors duration-150 focus:border-denim focus:outline-none placeholder:text-muted/60;
+    min-height: 40px;
+  }
+  .card { @apply rounded-lg border border-border bg-paper shadow-sm; }
+
+  /* Custom select: wrap `<select className="field select">` in a `relative` label with a .select-chevron sibling */
+  .select { @apply appearance-none pr-9; }
+  .select-chevron { @apply pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted; }
+
+  .chip { @apply inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-0.5 text-xs font-medium; }
+  .chip-green  { @apply chip bg-green-soft text-green border border-green-border; }
+  .chip-amber  { @apply chip bg-amber-soft text-amber border border-amber-border; }
+  .chip-red    { @apply chip bg-red-soft text-red border border-red-border; }
+  .chip-denim  { @apply chip bg-denim-light text-denim border border-denim/20; }
+  .chip-muted  { @apply chip bg-chalk text-muted border border-border; }
+
+  .alert-ok   { @apply rounded border border-green-border bg-green-soft px-4 py-3 text-sm text-green; }
+  .alert-err  { @apply rounded border border-red-border bg-red-soft px-4 py-3 text-sm text-red; }
+  .alert-info { @apply rounded border border-amber-border bg-amber-soft px-4 py-3 text-sm text-ink; }
+
+  .eyebrow { @apply text-xs font-semibold uppercase tracking-wider text-muted; }
+  .page-title { @apply font-display text-2xl font-bold text-denim sm:text-3xl; }
+  .card-title { @apply font-display text-base font-bold text-denim; }
+
+  /* Table */
+  .tbl { @apply w-full border-collapse text-sm; }
+  .tbl th {
+    @apply whitespace-nowrap border-b border-border bg-chalk px-4 py-2.5 text-left text-xs font-semibold uppercase tracking-wider text-muted;
+  }
+  .tbl td { @apply border-b border-border/70 px-4 py-3 align-middle; }
+  .tbl tbody tr:last-child td { @apply border-b-0; }
+  .tbl tbody tr { @apply transition-colors duration-100 hover:bg-denim-light/50; }
+}
+
+/* Woven twill: barely-there diagonal weave on the two fabric colours (same as the student site) */
+.bg-chalk { background-image: repeating-linear-gradient(135deg, rgba(34,51,107,.035) 0 1px, transparent 1px 4px); }
+.bg-denim { background-image: repeating-linear-gradient(135deg, rgba(255,255,255,.05) 0 1px, transparent 1px 4px); }
+
+/* Heading underline: a short run of gold stitches ending in a needle */
+.page-title::after {
+  content: ''; display: block; width: 96px; height: 12px; margin-top: .55rem;
+  background: url("data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 96 12'%3E%3Cline x1='2' y1='6' x2='62' y2='6' stroke='%23E59B1C' stroke-width='2.5' stroke-dasharray='8 6' stroke-linecap='round'/%3E%3Cg stroke='%2322336B' stroke-width='1.6' stroke-linecap='round' fill='none'%3E%3Cline x1='68' y1='10' x2='94' y2='2.5'/%3E%3Cellipse cx='70.4' cy='9.3' rx='1' ry='2' transform='rotate(-16 70.4 9.3)'/%3E%3C/g%3E%3C/svg%3E") no-repeat left center;
+}
+
+/* Stitched seam along the bottom of the sidebar logo block */
+.stitch-rule {
+  height: 3px;
+  background-image: repeating-linear-gradient(90deg, #E59B1C 0 8px, transparent 8px 14px);
+  opacity: .6;
+}
+
+@keyframes fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.fade-in { animation: fadein .3s ease-out both; }
+
+@keyframes growx { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.grow-x { transform-origin: left center; animation: growx .7s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes growy { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+.grow-y { transform-origin: bottom center; animation: growy .6s cubic-bezier(.2,.7,.2,1) both; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition-duration: .01ms !important; }
+}
