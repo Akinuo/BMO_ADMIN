@@ -41,10 +41,10 @@ export const getDashboard = cache(async () => {
   return { students, lessons, summary, totalSteps, nowMs }
 })
 
-export const getActivity = cache(async (): Promise<DailyActivityRow[]> => {
+export const getActivity = cache(async (days: number = ACTIVITY_DAYS): Promise<DailyActivityRow[]> => {
   await requireAdmin()
   const supabase = createClient()
-  const { data, error } = await supabase.rpc('admin_daily_activity', { p_days: ACTIVITY_DAYS, p_tz: TIMEZONE })
+  const { data, error } = await supabase.rpc('admin_daily_activity', { p_days: days, p_tz: TIMEZONE })
   if (error) throw new Error(`admin_daily_activity: ${error.message}`)
   return (data ?? []) as DailyActivityRow[]
 })

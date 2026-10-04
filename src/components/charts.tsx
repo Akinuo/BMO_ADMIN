@@ -9,10 +9,11 @@ export function ActivityChart({ data }: { data: DailyActivityRow[] }) {
   const total = data.reduce((a, d) => a + d.steps_completed, 0)
   const joined = data.reduce((a, d) => a + d.new_students, 0)
   const empty = total === 0
+  const gap = data.length > 45 ? 'gap-px' : 'gap-[3px]'
 
   return (
     <figure aria-label={`Steps completed per day over the last ${data.length} days`}>
-      <div className="relative flex h-44 items-end gap-[3px] pl-8">
+      <div className={`relative flex h-44 items-end ${gap} pl-8`}>
         {/* gridlines + scale */}
         {[1, 0.5, 0].map(f => (
           <div key={f} className="pointer-events-none absolute inset-x-0 flex items-center gap-2" style={{ bottom: `${f * 100}%`, transform: 'translateY(50%)' }}>
@@ -37,7 +38,7 @@ export function ActivityChart({ data }: { data: DailyActivityRow[] }) {
         })}
       </div>
       {/* one marker per day that had a new sign-up */}
-      <div className="mt-1.5 flex h-2 gap-[3px] pl-8" aria-hidden="true">
+      <div className={`mt-1.5 flex h-2 ${gap} pl-8`} aria-hidden="true">
         {data.map(d => (
           <div key={d.day} className="flex flex-1 justify-center">
             {d.new_students > 0 && <span className="h-2 w-2 rounded-full bg-thread" />}

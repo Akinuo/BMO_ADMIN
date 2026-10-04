@@ -17,8 +17,29 @@ const SEGMENTS = [
   { key: 'notStarted', label: 'Not started', color: 'bg-border' },
 ] as const
 
-export default async function OverviewPage() {
-  const [{ students, lessons, summary, nowMs }, activity] = await Promise.all([getDashboard(), getActivity()])
+const RANGES = [7, 30, 90] as const
+
+const sum = (rows: { steps_completed: number }[]) => rows.reduce((a, r) => a + r.steps_completed, 0)
+const sumNew = (rows: { new_students: number }[]) => rows.reduce((a, r) => a + r.new_students, 0)
+
+/** "▲ 18%" / "▼ 5%" / "no change" compared with the previous period. */
+function Trend({ now, before }: { now: number; before: number }) {
+  if (now === before) return <span className="chip-muted">{now === 0 ? 'no activity' : 'no change'}</span>
+  if (before === 0) return <span className="chip-green">▲ new</span>
+  const change = Math.round(((now - before) / before) * 100)
+  return <span className={change > 0 ? 'chip-green' : 'chip-red'}>{change > 0 ? '▲' : '▼'} {Math.abs(change)}%</span>
+}
+
+export default async function OverviewPage({ searchParams }: { searchParams: { range?: string } }) {
+  const range = RANGES.find(r => String(r) === searchParams.range) ?? ACTIVITY_DAYS
+  // Always fetch at least 14 days so "this week vs last week" works even on the 7-day view.
+  const [{ students, lessons, summary, nowMs }, activityAll] = await Promise.all([getDashboard(), getActivity(Math.max(range, 14))])
+  const activity = activityAll.slice(-range)
+  const week = activityAll.slice(-7)
+  const prevWeek = activityAll.slice(-14, -7)
+  const ready = students
+    .filter(s => s.status === 'completed')
+    .sort((a, b) => new Date(b.lastActivity ?? b.joinedAt).getTime() - new Date(a.lastActivity ?? a.joinedAt).getTime())
 
   const top = students.filter(s => s.rank !== null).slice(0, 5)
   const stalled = students
@@ -111,8 +132,44 @@ export default async function OverviewPage() {
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
         {/* Activity */}
         <section className="card p-5 lg:col-span-2" aria-label="Recent activity">
-          <h2 className="card-title">Activity, last {ACTIVITY_DAYS} days</h2>
-          <p className="mb-4 text-xs text-muted">Steps completed per day</p>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 className="card-title">Activity, last {range} days</h2>
+              <p className="text-xs text-muted">Steps completed per day</p>
+            </div>
+            <nav aria-label="Time range" className="flex gap-1 rounded-full bg-chalk p-1">
+              {RANGES.map(r => (
+                <Link
+                  key={r}
+                  href={r === ACTIVITY_DAYS ? '/' : `/?range=${r}`}
+                  scroll={false}
+                  aria-current={r === range ? 'true' : undefined}
+                  className={`flex min-h-[36px] min-w-[44px] items-center justify-center rounded-full px-3 text-xs font-semibold transition-colors ${
+                    r === range ? 'bg-denim text-white' : 'text-muted hover:text-denim'
+                  }`}
+                >
+                  {r}d
+                </Link>
+              ))}
+            </nav>
+          </div>
+          <dl className="mb-4 mt-3 flex flex-wrap gap-x-8 gap-y-2 border-y border-border py-3 text-sm">
+            <div>
+              <dt className="text-xs text-muted">Steps completed · last 7 days</dt>
+              <dd className="mt-0.5 flex items-center gap-2">
+                <span className="font-display text-xl font-bold text-denim">{sum(week).toLocaleString('en-PH')}</span>
+                <Trend now={sum(week)} before={sum(prevWeek)} />
+                <span className="text-xs text-muted">vs previous 7 days</span>
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted">New students · last 7 days</dt>
+              <dd className="mt-0.5 flex items-center gap-2">
+                <span className="font-display text-xl font-bold text-denim">{sumNew(week).toLocaleString('en-PH')}</span>
+                <Trend now={sumNew(week)} before={sumNew(prevWeek)} />
+              </dd>
+            </div>
+          </dl>
           <ActivityChart data={activity} />
         </section>
 
@@ -155,6 +212,7 @@ export default async function OverviewPage() {
           {lessons.length ? <LessonFunnel lessons={lessons} totalStudents={summary.total} /> : <EmptyState title="No lessons found" />}
         </section>
 
+        <div className="grid content-start gap-4">
         {/* Needs a nudge */}
         <section className="card flex flex-col p-5" aria-label="Students who may need a nudge">
           <div className="flex items-baseline justify-between">
@@ -195,6 +253,39 @@ export default async function OverviewPage() {
             </p>
           )}
         </section>
+
+        {/* Finished every lesson, final assessment not passed yet */}
+        <section className="card flex flex-col p-5" aria-label="Ready for the final assessment">
+          <div className="flex items-baseline justify-between">
+            <h2 className="card-title">Ready for the assessment</h2>
+            <span className="text-xs text-muted">{ready.length}</span>
+          </div>
+          {ready.length ? (
+            <>
+              <ul className="mt-3 grid gap-3">
+                {ready.slice(0, 5).map(s => (
+                  <li key={s.id} className="flex items-center justify-between gap-3">
+                    <div className="min-w-0 flex-1"><StudentLink s={s} /></div>
+                    <span className={`shrink-0 text-xs font-semibold ${s.assessment ? 'text-amber' : 'text-muted'}`}>
+                      {s.assessment ? `Scored ${s.assessment.pct}%` : 'Not taken'}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+              {ready.length > 5 && (
+                <p className="mt-3 text-xs text-muted">
+                  and {ready.length - 5} more &middot;{' '}
+                  <Link href="/students?filter=completed" className="font-semibold text-denim hover:underline">see all</Link>
+                </p>
+              )}
+            </>
+          ) : (
+            <p className="px-2 py-6 text-center text-xs text-muted">
+              Students who finish every lesson but haven&rsquo;t passed the final assessment show up here.
+            </p>
+          )}
+        </section>
+        </div>
       </div>
     </>
   )
