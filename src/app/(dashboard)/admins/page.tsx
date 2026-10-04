@@ -8,13 +8,25 @@ import { AddAdminForm, RemoveAdminButton } from './AdminForms'
 export const metadata: Metadata = { title: 'Admins' }
 
 export default async function AdminsPage() {
-  const [me, admins] = await Promise.all([requireAdmin(), getAdmins()])
+  const [me, { admins, setupNeeded, error }] = await Promise.all([requireAdmin(), getAdmins()])
   const nowMs = Date.now()
 
   return (
     <>
       <PageHeader title="Admins" subtitle="Accounts that can sign in to this dashboard and see student data." />
 
+      {setupNeeded && (
+        <section className="alert-info" role="status">
+          <p className="font-semibold">One-time setup needed</p>
+          <p className="mt-1">
+            Open the Supabase SQL Editor, paste the contents of <code>supabase/admin_management.sql</code> from the repo, run it,
+            then refresh this page. Nothing else in the dashboard is affected.
+          </p>
+        </section>
+      )}
+      {error && <p role="alert" className="alert-err">{error}</p>}
+
+      {!setupNeeded && !error && (
       <section className="card p-5" aria-label="Add an admin">
         <h2 className="card-title">Add a new admin</h2>
         <p className="mb-4 mt-1 text-sm text-muted">
@@ -25,7 +37,9 @@ export default async function AdminsPage() {
           <AddAdminForm />
         </div>
       </section>
+      )}
 
+      {!setupNeeded && !error && (
       <section className="card mt-6 overflow-hidden" aria-label="Current admins">
         {admins.length === 0 ? (
           <EmptyState title="No admins found" />
@@ -66,6 +80,7 @@ export default async function AdminsPage() {
           </div>
         )}
       </section>
+      )}
     </>
   )
 }

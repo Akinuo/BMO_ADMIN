@@ -57,10 +57,19 @@ export async function getStudentSteps(userId: string): Promise<StepDetailRow[]> 
   return (data ?? []) as StepDetailRow[]
 }
 
-export async function getAdmins(): Promise<AdminRow[]> {
+export type AdminsResult = { admins: AdminRow[]; setupNeeded: boolean; error: string | null }
+
+/**
+ * Never throws: in production Next.js hides thrown messages, which left the Admins page
+ * showing a generic error when the SQL hadn't been run yet. Return the state instead.
+ */
+export async function getAdmins(): Promise<AdminsResult> {
   await requireAdmin()
   const supabase = createClient()
   const { data, error } = await supabase.rpc('admin_list_admins')
-  if (error) throw new Error(`admin_list_admins: ${error.message}`)
-  return (data ?? []) as AdminRow[]
+  if (error) {
+    const missing = error.code === 'PGRST202' || error.code === '42883' || /could not find the function|does not exist/i.test(error.message)
+    return { admins: [], setupNeeded: missing, error: missing ? null : 'Could not load the admin list. Please try again.' }
+  }
+  return { admins: (data ?? []) as AdminRow[], setupNeeded: false, error: null }
 }
