@@ -57,7 +57,10 @@ export async function middleware(req: NextRequest) {
     },
   })
 
-  const { data: { user } } = await supabase.auth.getUser()
+  // getClaims() verifies the token locally (and still refreshes an expired session), so this no longer
+  // costs a round trip to Supabase Auth on every request, page view and prefetch.
+  const { data: auth } = await supabase.auth.getClaims()
+  const user = auth?.claims?.sub ? auth.claims : null
 
   const redirectTo = (target: URL) => {
     const r = NextResponse.redirect(target)

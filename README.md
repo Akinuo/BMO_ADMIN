@@ -27,6 +27,7 @@ The admin site signs in with a normal Supabase account that has `role = 'admin'`
    ```
 2. **Add the database functions.** Supabase → *SQL Editor* → paste and run `supabase/admin_dashboard.sql`.
    Use the *same* project as the student app (after `0001_init.sql` and `0002_assessment.sql` have been run). It is safe to re-run.
+   Then run `supabase/performance.sql` too (indexes + a single-call data function). The site works without it, just slower.
 3. **Make yourself an admin.** Create the account first (sign up in the student app, or use Google), then run:
    ```sql
    update public.profiles set role = 'admin'
@@ -77,7 +78,8 @@ Students with exactly the same result share a rank (1, 2, 2, 4 …), shown with 
 - The student app saves only *correct* answers, so the dashboard can't show wrong-answer counts or per-question accuracy.
 - "Who got there first" uses the time a step was saved to the database. If a student works offline, it is recorded when their device next syncs.
 - The student list is fetched in pages of 1,000, so totals stay correct beyond Supabase's default row cap.
-- Each page view makes 2–3 small database calls and nothing is polled, so it is well within the Supabase free tier. Use the **Refresh** button for fresh numbers.
+- The server reuses the student numbers for `DATA_CACHE_SECONDS` (30 s, in `src/lib/config.ts`), shared by all admins, so a burst of page views hits the database once. Nothing is polled. The **Refresh** button always fetches fresh numbers.
+- Sessions are checked from the signed token (no Supabase Auth round trip per request); the admin role itself is still read from the database on every page view, and every SQL function re-checks `is_admin()`.
 - CSV exports contain student emails. Handle them as personal data under your privacy statement. Names that begin with `=`, `+`, `-` or `@` are neutralised so they can't run as spreadsheet formulas.
 
 ## Scripts
@@ -93,6 +95,8 @@ npm test            # unit tests for ranking + CSV export
 
 ```
 supabase/admin_dashboard.sql     the four read-only, admin-only SQL functions
+supabase/performance.sql         indexes + admin_students_snapshot() (one-call data fetch)
+src/lib/cache.ts                 short server-side cache shared by all admins
 src/lib/ranking.ts               ranking rule (tested)
 src/lib/students.ts              status, progress %, stalled flag, summary numbers
 src/lib/data.ts                  server-side data fetching (admin-gated)

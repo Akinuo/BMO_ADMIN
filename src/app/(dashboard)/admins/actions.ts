@@ -1,6 +1,7 @@
 'use server'
 import { revalidatePath } from 'next/cache'
 import { requireAdmin } from '@/lib/auth'
+import { clearDataCache } from '@/lib/cache'
 import { createClient } from '@/lib/supabase/server'
 
 export type ActionState = { ok: boolean; message: string } | null
@@ -29,6 +30,7 @@ export async function addAdmin(_prev: ActionState, formData: FormData): Promise<
   const supabase = createClient()
   const { error } = await supabase.rpc('admin_add_admin', { p_email: email })
   if (error) return { ok: false, message: friendly(error) }
+  clearDataCache() // admins are never counted as students
   revalidatePath('/admins')
   return { ok: true, message: `${email.toLowerCase()} is now an admin.` }
 }
@@ -40,6 +42,7 @@ export async function removeAdmin(_prev: ActionState, formData: FormData): Promi
   const supabase = createClient()
   const { error } = await supabase.rpc('admin_remove_admin', { p_user: id })
   if (error) return { ok: false, message: friendly(error) }
+  clearDataCache()
   revalidatePath('/admins')
   return { ok: true, message: 'Admin access removed.' }
 }

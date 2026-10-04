@@ -41,11 +41,12 @@ function Stat({ label, children, sub }: { label: string; children: React.ReactNo
 export default async function StudentPage({ params }: { params: { id: string } }) {
   if (!UUID.test(params.id)) notFound()
 
-  const { students, summary, nowMs } = await getDashboard()
+  // Both fetches start together; the id is already validated as a UUID above.
+  const [{ students, summary, nowMs }, steps] = await Promise.all([getDashboard(), getStudentSteps(params.id)])
   const s = students.find(x => x.id === params.id)
   if (!s) notFound()
 
-  const lessons = group(await getStudentSteps(s.id))
+  const lessons = group(steps)
   // the lesson they're working on right now opens by default
   const currentIdx = lessons.findIndex(l => l.steps.some(st => !st.completed_at))
   const rankedCount = students.filter(x => x.rank !== null).length

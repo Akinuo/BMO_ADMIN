@@ -18,4 +18,11 @@ export const LEADERBOARD_LIMIT = 50
 /** Rows per page in the Students table. */
 export const PAGE_SIZE = 25
 
+/**
+ * How long the server reuses the student numbers between page views (seconds). Every admin shares
+ * the same cached copy, so the database runs the heavy queries at most once per window.
+ * The Refresh button always bypasses it. Set to 0 to turn caching off.
+ */
+export const DATA_CACHE_SECONDS = 30
+
 export const DAY_MS = 24 * 60 * 60 * 1000
