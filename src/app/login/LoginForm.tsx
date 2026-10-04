@@ -4,7 +4,8 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 import { IconLock, IconPulse, IconTrophy, IconUsers, SpoolMark } from '@/components/icons'
 import { safeNext } from '@/lib/safeNext'
-import { supabaseBrowser as supabase } from '@/lib/supabase/client'
+import { getSupabaseBrowser } from '@/lib/supabase/client'
+import { supabaseConfigured } from '@/lib/supabase/env'
 
 function GoogleLogo() {
   return (
@@ -44,10 +45,12 @@ export default function LoginForm() {
 
   async function submit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
-    if (!supabase) return
+    const loading = getSupabaseBrowser()
+    if (!loading) return
     setBusy(true)
     setMsg('')
     const f = new FormData(e.currentTarget)
+    const supabase = await loading
     const { error } = await supabase.auth.signInWithPassword({
       email: String(f.get('email')).trim(),
       password: String(f.get('password')),
@@ -62,9 +65,11 @@ export default function LoginForm() {
   }
 
   async function google() {
-    if (!supabase) return
+    const loading = getSupabaseBrowser()
+    if (!loading) return
     setGoogleBusy(true)
     setMsg('')
+    const supabase = await loading
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: `${location.origin}/auth/callback?next=${encodeURIComponent(next)}` },
@@ -76,7 +81,7 @@ export default function LoginForm() {
   }
 
   return (
-    <div className="grid min-h-screen lg:grid-cols-[1fr_1.05fr]">
+    <div className="grid min-h-dvh lg:grid-cols-[1fr_1.05fr]">
       {/* Brand panel */}
       <div className="relative hidden flex-col justify-between overflow-hidden bg-denim px-10 py-12 text-white lg:flex">
         <SpoolMark className="absolute -bottom-8 -right-6 h-72 w-72 -rotate-12 text-white/[0.07]" />
@@ -119,7 +124,7 @@ export default function LoginForm() {
           <h2 className="page-title">Admin sign in</h2>
           <p className="mt-1 text-sm text-muted">For instructors with an admin account.</p>
 
-          {!supabase && (
+          {!supabaseConfigured && (
             <div className="alert-info mt-4">Supabase is not configured. Add your keys to <code className="font-mono text-xs">.env.local</code>.</div>
           )}
           {params.get('signedout') && !msg && <p className="alert-ok mt-4">You have been signed out.</p>}
@@ -127,7 +132,7 @@ export default function LoginForm() {
           <button
             type="button"
             onClick={google}
-            disabled={googleBusy || !supabase}
+            disabled={googleBusy || !supabaseConfigured}
             className="mt-6 flex w-full items-center justify-center gap-3 rounded border border-border bg-paper py-2.5 text-sm font-medium text-ink shadow-sm transition-colors hover:bg-chalk disabled:cursor-not-allowed disabled:opacity-50"
           >
             {googleBusy ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-border border-t-ink" /> : <GoogleLogo />}
@@ -140,7 +145,7 @@ export default function LoginForm() {
             <div className="h-px flex-1 bg-border" />
           </div>
 
-          <form onSubmit={submit} className="mt-5 grid gap-4">
+          <form onSubmit={submit} onFocusCapture={() => void getSupabaseBrowser()} className="mt-5 grid gap-4">
             <label className="block text-sm font-medium text-ink">
               Email address
               <input name="email" type="email" required autoComplete="email" placeholder="you@example.com" className="field" />
@@ -167,7 +172,7 @@ export default function LoginForm() {
               </div>
             </label>
 
-            <button className="btn mt-1 w-full" disabled={busy || !supabase}>
+            <button className="btn mt-1 w-full" disabled={busy || !supabaseConfigured}>
               {busy ? (
                 <span className="flex items-center gap-2">
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />

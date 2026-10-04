@@ -158,7 +158,7 @@ export default function StudentsTable({
               type="button"
               aria-pressed={filter === f}
               onClick={() => { setFilter(f); setPage(0) }}
-              className={`rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
+              className={`rounded-full border px-3 py-1.5 text-xs font-semibold sm:py-1 transition-colors ${
                 filter === f ? 'border-denim bg-denim text-white' : 'border-border bg-paper text-muted hover:border-denim/40 hover:text-denim'
               }`}
             >
@@ -254,11 +254,11 @@ export default function StudentsTable({
           </span>
           {pages > 1 && (
             <div className="flex items-center gap-1.5">
-              <button type="button" className="btn-outline !min-h-[32px] !px-3 !py-1 text-xs" disabled={safePage === 0} onClick={() => setPage(safePage - 1)}>
+              <button type="button" className="btn-outline !min-h-[40px] !px-3 !py-1 text-xs sm:!min-h-[32px]" disabled={safePage === 0} onClick={() => setPage(safePage - 1)}>
                 <IconChevron className="h-3.5 w-3.5 rotate-90" /> Previous
               </button>
               <span className="px-1">Page {safePage + 1} of {pages}</span>
-              <button type="button" className="btn-outline !min-h-[32px] !px-3 !py-1 text-xs" disabled={safePage >= pages - 1} onClick={() => setPage(safePage + 1)}>
+              <button type="button" className="btn-outline !min-h-[40px] !px-3 !py-1 text-xs sm:!min-h-[32px]" disabled={safePage >= pages - 1} onClick={() => setPage(safePage + 1)}>
                 Next <IconChevron className="h-3.5 w-3.5 -rotate-90" />
               </button>
             </div>

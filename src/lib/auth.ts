@@ -2,7 +2,7 @@ import { cache } from 'react'
 import { redirect } from 'next/navigation'
 import { createClient } from './supabase/server'
 
-export type AdminSession = {
+type AdminSession = {
   id: string
   email: string | null
   name: string

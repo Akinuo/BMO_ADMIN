@@ -56,7 +56,7 @@ export function buildStudents(rows: StudentStatRow[], totalSteps: number, nowMs:
   return rankStudents(base).map(({ assessmentPct: _drop, ...s }) => s as Student)
 }
 
-export type Summary = {
+type Summary = {
   total: number
   newThisWeek: number
   activeThisWeek: number

@@ -47,7 +47,7 @@
            transition-colors duration-150 hover:bg-denim-light hover:text-denim active:scale-[0.98];
   }
   .field {
-    @apply mt-1 block w-full rounded border border-border bg-paper px-3 py-2 text-sm text-ink
+    @apply mt-1 block w-full rounded border border-border bg-paper px-3 py-2 text-base text-ink sm:text-sm
            transition-colors duration-150 focus:border-denim focus:outline-none placeholder:text-muted/60;
     min-height: 40px;
   }
@@ -81,6 +81,10 @@
   .tbl tbody tr:last-child td { @apply border-b-0; }
   .tbl tbody tr { @apply transition-colors duration-100 hover:bg-denim-light/50; }
 }
+
+/* Phones: no 300ms tap delay / double-tap zoom on controls, and stable text size on rotate */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+a, button, input, select, summary, label { touch-action: manipulation; }
 
 /* Woven twill: barely-there diagonal weave on the two fabric colours (same as the student site) */
 .bg-chalk { background-image: repeating-linear-gradient(135deg, rgba(34,51,107,.035) 0 1px, transparent 1px 4px); }

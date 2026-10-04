@@ -57,7 +57,7 @@ export async function getStudentSteps(userId: string): Promise<StepDetailRow[]> 
   return (data ?? []) as StepDetailRow[]
 }
 
-export type AdminsResult = { admins: AdminRow[]; setupNeeded: boolean; error: string | null }
+type AdminsResult = { admins: AdminRow[]; setupNeeded: boolean; error: string | null }
 
 /**
  * Never throws: in production Next.js hides thrown messages, which left the Admins page

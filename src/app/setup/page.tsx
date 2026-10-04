@@ -5,7 +5,7 @@ export const metadata: Metadata = { title: 'Setup needed' }
 // Shown (via middleware) when the Supabase environment variables are missing.
 export default function SetupPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-12">
+    <div className="flex min-h-dvh items-center justify-center px-4 py-12">
       <div className="card w-full max-w-lg p-8">
         <h1 className="font-display text-2xl font-bold text-denim">Almost there — connect your database</h1>
         <p className="mt-2 text-sm leading-relaxed text-muted">

@@ -11,7 +11,7 @@ export default async function DeniedPage() {
   const { data: { user } } = await supabase.auth.getUser()
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4 py-12">
+    <div className="flex min-h-dvh items-center justify-center px-4 py-12">
       <div className="card w-full max-w-md p-8 text-center">
         <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-soft text-amber">
           <IconLock className="h-6 w-6" />

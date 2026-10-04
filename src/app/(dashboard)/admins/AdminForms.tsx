@@ -98,7 +98,7 @@ export function AddAdminForm() {
         Email of the account to promote
       </label>
       <div className="relative mt-1">
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 flex items-center overflow-hidden whitespace-pre rounded border border-transparent px-3 text-sm">
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 flex items-center overflow-hidden whitespace-pre rounded border border-transparent px-3 text-base sm:text-sm">
           <span className="invisible">{typed}</span>
           <span className="text-muted/60">{ghost}</span>
         </div>

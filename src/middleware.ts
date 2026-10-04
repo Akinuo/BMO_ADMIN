@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
+import { buildCsp } from '@/lib/csp'
 
 // Everything except these needs a signed-in account. (Whether that account is an *admin* is
 // checked on the server in requireAdmin(), and again inside every SQL function.)
@@ -11,19 +12,35 @@ export async function middleware(req: NextRequest) {
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   const { pathname } = req.nextUrl
 
+  // A fresh one-time nonce per request: only scripts Next.js itself emits carry it, so an
+  // injected <script> can't run. Next reads it from the request's CSP header.
+  const nonce = btoa(crypto.randomUUID())
+  const csp = buildCsp(nonce)
+  const requestHeaders = new Headers(req.headers)
+  requestHeaders.set('content-security-policy', csp)
+
+  const next = () => {
+    const r = NextResponse.next({ request: { headers: requestHeaders } })
+    r.headers.set('Content-Security-Policy', csp)
+    return r
+  }
+
   if (!url || !key) {
-    if (pathname === '/setup') return NextResponse.next()
-    return NextResponse.rewrite(new URL('/setup', req.url))
+    if (pathname === '/setup') return next()
+    const r = NextResponse.rewrite(new URL('/setup', req.url), { request: { headers: requestHeaders } })
+    r.headers.set('Content-Security-Policy', csp)
+    return r
   }
 
   // Keeps the session cookie fresh while the admin browses.
-  let res = NextResponse.next({ request: req })
+  let res = next()
   const supabase = createServerClient(url, key, {
     cookies: {
       getAll: () => req.cookies.getAll(),
       setAll: list => {
         list.forEach(({ name, value }) => req.cookies.set(name, value))
-        res = NextResponse.next({ request: req })
+        requestHeaders.set('cookie', req.headers.get('cookie') ?? '')
+        res = next()
         list.forEach(({ name, value, options }) => res.cookies.set(name, value, options))
       },
     },

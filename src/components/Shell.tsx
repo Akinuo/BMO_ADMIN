@@ -39,7 +39,7 @@ export default function Shell({ name, email, children }: { name: string; email: 
   const path = usePathname()
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-dvh">
       {/* Desktop sidebar */}
       <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col overflow-hidden bg-denim text-white lg:flex">
         <SpoolMark className="absolute -bottom-8 -right-6 h-56 w-56 -rotate-12 text-white/[0.06]" />
