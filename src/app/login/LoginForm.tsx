@@ -27,6 +27,18 @@ function friendlyError(msg: string): string {
   return 'Something went wrong. Please try again.'
 }
 
+const OAUTH_REASONS: Record<string, string> = {
+  denied: 'Google sign-in was cancelled, or that Google account is not allowed to use this app. If the Google app is in "Testing" mode, add the account as a test user.',
+  provider: 'Google or Supabase reported a problem. Check the Google provider settings in Supabase (client ID, secret and redirect URLs).',
+  verifier: 'Your browser lost its sign-in state. Make sure cookies are allowed for this site, then try again.',
+  exchange: 'Google accepted you, but the session could not be created. Please try again.',
+  nocode: 'Google did not send a sign-in code back. Please try again.',
+}
+
+function oauthMessage(reason: string | null): string {
+  return `Google sign-in failed. ${(reason && OAUTH_REASONS[reason]) || 'Please try again.'}`
+}
+
 const POINTS = [
   { Icon: IconUsers, text: 'Total students and who is active this week' },
   { Icon: IconPulse, text: 'Progress for every student, lesson by lesson' },
@@ -38,7 +50,7 @@ export default function LoginForm() {
   const params = useSearchParams()
   const next = safeNext(params.get('next'))
 
-  const [msg, setMsg] = useState(params.get('error') === 'oauth' ? 'Google sign-in failed. Please try again.' : '')
+  const [msg, setMsg] = useState(params.get('error') === 'oauth' ? oauthMessage(params.get('reason')) : '')
   const [busy, setBusy] = useState(false)
   const [googleBusy, setGoogleBusy] = useState(false)
   const [showPw, setShowPw] = useState(false)
@@ -73,7 +85,7 @@ export default function LoginForm() {
     setGoogleBusy(true)
     setMsg('')
     const supabase = await loading
-    await supabase.auth.signOut({ scope: 'local' })
+    // (No sign-out here: finishing the Google sign-in replaces any existing session by itself.)
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
