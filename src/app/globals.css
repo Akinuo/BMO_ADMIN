@@ -133,6 +133,8 @@ a, button, input, select, summary, label { touch-action: manipulation; }
 
 /* Print: A4, no app chrome, nothing split across pages */
 @page { size: A4; margin: 14mm; }
+/* The Students list has seven columns, so it prints in landscape; every other page stays portrait */
+@page wide { size: A4 landscape; margin: 12mm; }
 @media print {
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   body { background: #fff !important; background-image: none !important; }
@@ -149,5 +151,6 @@ a, button, input, select, summary, label { touch-action: manipulation; }
   .overflow-x-auto { overflow: visible !important; }
   .tbl th, .tbl td { white-space: normal; }
   .tbl th svg { display: none; }
+  .print-landscape { page: wide; }
   .tbl .w-52, .tbl .w-16, .tbl .w-20 { width: auto !important; }
 }

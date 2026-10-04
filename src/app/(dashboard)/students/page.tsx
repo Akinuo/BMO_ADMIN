@@ -12,7 +12,7 @@ export default async function StudentsPage({ searchParams }: { searchParams: { f
   const initialFilter = FILTERS.includes(searchParams.filter as Filter) ? (searchParams.filter as Filter) : 'all'
 
   return (
-    <>
+    <div className="print-landscape">
       <PageHeader
         title="Students"
         subtitle={`${summary.total.toLocaleString('en-PH')} registered · progress out of ${summary.totalSteps} steps in ${summary.totalLessons} lessons`}
@@ -24,6 +24,6 @@ export default async function StudentsPage({ searchParams }: { searchParams: { f
         totalLessons={summary.totalLessons}
         initialFilter={initialFilter}
       />
-    </>
+    </div>
   )
 }
