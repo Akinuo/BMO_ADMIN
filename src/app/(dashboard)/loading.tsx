@@ -1,5 +1,8 @@
+import SlowLoader from '@/components/SlowLoader'
+
 export default function Loading() {
   return (
+    <>
     <div aria-busy="true" aria-live="polite" className="animate-pulse">
       <div className="h-8 w-48 rounded bg-denim-light" />
       <div className="mt-2 h-4 w-72 rounded bg-denim-light/70" />
@@ -12,5 +15,8 @@ export default function Loading() {
       </div>
       <span className="sr-only">Loading…</span>
     </div>
+    {/* outside the pulsing skeleton, so it doesn't flicker with it */}
+    <SlowLoader />
+    </>
   )
 }

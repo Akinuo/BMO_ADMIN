@@ -1,13 +1,16 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { ActivityChart, LessonFunnel } from '@/components/charts'
 import { IconAlert, IconArrowRight, IconCheck } from '@/components/icons'
 import PrintButton from '@/components/PrintButton'
 import RefreshButton from '@/components/RefreshButton'
+import SlowLoader from '@/components/SlowLoader'
 import { EmptyState, KpiStrip, PageHeader, ProgressBar, RankBadge, StudentLink } from '@/components/ui'
-import { ACTIVE_DAYS, ACTIVITY_DAYS, STALLED_DAYS } from '@/lib/config'
+import { ACTIVE_DAYS, ACTIVITY_DAYS, ACTIVITY_MAX_DAYS, STALLED_DAYS } from '@/lib/config'
 import { getActivity, getDashboard } from '@/lib/data'
 import { formatDateTime, pct, plural, timeAgo } from '@/lib/format'
+import type { DailyActivityRow } from '@/lib/types'
 
 export const metadata: Metadata = { title: 'Overview' }
 
@@ -31,13 +34,74 @@ function Trend({ now, before }: { now: number; before: number }) {
   return <span className={change > 0 ? 'chip-green' : 'chip-red'}>{change > 0 ? '▲' : '▼'} {Math.abs(change)}%</span>
 }
 
-export default async function OverviewPage({ searchParams }: { searchParams: { range?: string } }) {
-  const range = RANGES.find(r => String(r) === searchParams.range) ?? ACTIVITY_DAYS
-  // Always fetch at least 14 days so "this week vs last week" works even on the 7-day view.
-  const [{ students, lessons, summary, nowMs }, activityAll] = await Promise.all([getDashboard(), getActivity(Math.max(range, 14))])
+function ActivitySkeleton() {
+  return (
+    <section className="card p-5 lg:col-span-2 print:col-span-2" aria-label="Recent activity" aria-busy="true">
+      <h2 className="card-title">Activity</h2>
+      <p className="text-xs text-muted">Steps completed per day</p>
+      <div className="mt-6 h-44 animate-pulse rounded-lg bg-chalk" />
+      <div className="mt-4"><SlowLoader inline title="Still loading the chart…" hint="This is taking longer than usual." /></div>
+    </section>
+  )
+}
+
+async function ActivitySection({ rows, range }: { rows: Promise<DailyActivityRow[]>; range: number }) {
+  const activityAll = await rows
   const activity = activityAll.slice(-range)
   const week = activityAll.slice(-7)
   const prevWeek = activityAll.slice(-14, -7)
+  return (
+    <section className="card p-5 lg:col-span-2 print:col-span-2" aria-label="Recent activity">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h2 className="card-title">Activity, last {range} days</h2>
+          <p className="text-xs text-muted">Steps completed per day</p>
+        </div>
+        <nav aria-label="Time range" className="flex gap-1 rounded-full bg-chalk p-1 print:hidden">
+          {RANGES.map(r => (
+            <Link
+              key={r}
+              href={r === ACTIVITY_DAYS ? '/' : `/?range=${r}`}
+              scroll={false}
+              aria-current={r === range ? 'true' : undefined}
+              className={`flex min-h-[36px] min-w-[44px] items-center justify-center rounded-full px-3 text-xs font-semibold transition-colors ${
+                r === range ? 'bg-denim text-white' : 'text-muted hover:text-denim'
+              }`}
+            >
+              {r}d
+            </Link>
+          ))}
+        </nav>
+      </div>
+      <dl className="mb-4 mt-3 flex flex-wrap gap-x-8 gap-y-2 border-y border-border py-3 text-sm">
+        <div>
+          <dt className="text-xs text-muted">Steps completed · last 7 days</dt>
+          <dd className="mt-0.5 flex items-center gap-2">
+            <span className="font-display text-xl font-bold text-denim">{sum(week).toLocaleString('en-PH')}</span>
+            <Trend now={sum(week)} before={sum(prevWeek)} />
+            <span className="text-xs text-muted">vs previous 7 days</span>
+          </dd>
+        </div>
+        <div>
+          <dt className="text-xs text-muted">New students · last 7 days</dt>
+          <dd className="mt-0.5 flex items-center gap-2">
+            <span className="font-display text-xl font-bold text-denim">{sumNew(week).toLocaleString('en-PH')}</span>
+            <Trend now={sumNew(week)} before={sumNew(prevWeek)} />
+          </dd>
+        </div>
+      </dl>
+      <ActivityChart data={activity} />
+    </section>
+  )
+}
+
+export default async function OverviewPage({ searchParams }: { searchParams: { range?: string } }) {
+  const range = RANGES.find(r => String(r) === searchParams.range) ?? ACTIVITY_DAYS
+  // Start the chart's query now, in parallel with the student numbers. It is always the full 90 days
+  // (small), sliced below, so flipping between 7 / 30 / 90 days reuses the cached result.
+  const activityRows = getActivity(ACTIVITY_MAX_DAYS)
+  activityRows.catch(() => {}) // handled when the chart awaits it; don't warn if the page redirects first
+  const { students, lessons, summary, nowMs, fetchedAt } = await getDashboard()
   const ready = students
     .filter(s => s.status === 'completed')
     .sort((a, b) => new Date(b.lastActivity ?? b.joinedAt).getTime() - new Date(a.lastActivity ?? a.joinedAt).getTime())
@@ -52,7 +116,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
     <>
       <PageHeader
         title="Overview"
-        subtitle={<>Live from your database &middot; updated {formatDateTime(new Date(nowMs).toISOString())}</>}
+        subtitle={<>Live from your database &middot; updated {formatDateTime(new Date(fetchedAt).toISOString())}</>}
         actions={<><PrintButton label="Print report" /><RefreshButton /></>}
       />
 
@@ -115,48 +179,10 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
       </section>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-3 print:grid-cols-3">
-        {/* Activity */}
-        <section className="card p-5 lg:col-span-2 print:col-span-2" aria-label="Recent activity">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <h2 className="card-title">Activity, last {range} days</h2>
-              <p className="text-xs text-muted">Steps completed per day</p>
-            </div>
-            <nav aria-label="Time range" className="flex gap-1 rounded-full bg-chalk p-1 print:hidden">
-              {RANGES.map(r => (
-                <Link
-                  key={r}
-                  href={r === ACTIVITY_DAYS ? '/' : `/?range=${r}`}
-                  scroll={false}
-                  aria-current={r === range ? 'true' : undefined}
-                  className={`flex min-h-[36px] min-w-[44px] items-center justify-center rounded-full px-3 text-xs font-semibold transition-colors ${
-                    r === range ? 'bg-denim text-white' : 'text-muted hover:text-denim'
-                  }`}
-                >
-                  {r}d
-                </Link>
-              ))}
-            </nav>
-          </div>
-          <dl className="mb-4 mt-3 flex flex-wrap gap-x-8 gap-y-2 border-y border-border py-3 text-sm">
-            <div>
-              <dt className="text-xs text-muted">Steps completed · last 7 days</dt>
-              <dd className="mt-0.5 flex items-center gap-2">
-                <span className="font-display text-xl font-bold text-denim">{sum(week).toLocaleString('en-PH')}</span>
-                <Trend now={sum(week)} before={sum(prevWeek)} />
-                <span className="text-xs text-muted">vs previous 7 days</span>
-              </dd>
-            </div>
-            <div>
-              <dt className="text-xs text-muted">New students · last 7 days</dt>
-              <dd className="mt-0.5 flex items-center gap-2">
-                <span className="font-display text-xl font-bold text-denim">{sumNew(week).toLocaleString('en-PH')}</span>
-                <Trend now={sumNew(week)} before={sumNew(prevWeek)} />
-              </dd>
-            </div>
-          </dl>
-          <ActivityChart data={activity} />
-        </section>
+        {/* Activity — streams in on its own, so the numbers above don't wait for the chart */}
+        <Suspense fallback={<ActivitySkeleton />}>
+          <ActivitySection rows={activityRows} range={range} />
+        </Suspense>
 
         {/* Top performers */}
         <section className="card flex flex-col p-5" aria-label="Top students">

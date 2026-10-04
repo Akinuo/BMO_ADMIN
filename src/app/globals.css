@@ -111,8 +111,15 @@ a, button, input, select, summary, label { touch-action: manipulation; }
 @keyframes growy { from { transform: scaleY(0); } to { transform: scaleY(1); } }
 .grow-y { transform-origin: bottom center; animation: growy .6s cubic-bezier(.2,.7,.2,1) both; }
 
+/* "Still loading" message: invisible for 2 s (SLOW_LOAD_MS in config.ts), then fades in. */
+@keyframes slowload { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.slow-loader { opacity: 0; animation: slowload .35s ease-out 2s both; }
+@keyframes slowload-show { from { opacity: 0; } to { opacity: 1; } }
+
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition-duration: .01ms !important; }
+  /* keep the 2 s delay, but just appear (no movement) */
+  .slow-loader { animation: slowload-show .01s linear 2s both !important; }
 }
 
 /* KPI strip: one panel, cells divided by a line of topstitching */

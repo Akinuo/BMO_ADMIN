@@ -51,9 +51,9 @@ async function loadSnapshot(supabase: Client): Promise<Snapshot> {
 }
 
 /**
- * Starts the admin check and the data fetch at the same time (instead of one after the other),
- * then only hands the data over once the admin check has passed. The SQL functions check
- * is_admin() themselves, so starting early exposes nothing.
+ * For the uncached per-student query: starts the admin check and the fetch together (one round trip
+ * saved), then only hands the data over once the admin check has passed. The SQL function checks
+ * is_admin() itself, so starting early exposes nothing.
  */
 async function adminThen<T>(data: Promise<T>): Promise<T> {
   data.catch(() => {}) // if the admin check redirects first, don't leave this rejection unhandled
@@ -64,27 +64,34 @@ async function adminThen<T>(data: Promise<T>): Promise<T> {
 /**
  * Everything the overview / students / leaderboard pages need, fetched once per request
  * (React `cache` de-dupes it across layout + page) and shared between requests for a few seconds.
+ * `fetchedAt` is when the numbers were actually read from the database.
+ *
+ * The admin check comes FIRST: the shared cache must only ever be touched by a confirmed admin
+ * (otherwise a non-admin's failed load could be shared with, or refreshed by, a real admin).
  */
 export const getDashboard = cache(async () => {
+  await requireAdmin()
   const supabase = createClient()
-  const { statRows, lessons } = await adminThen(ttlCache('snapshot', () => loadSnapshot(supabase)))
+  const { statRows, lessons, fetchedAt } = await ttlCache('snapshot', async () => ({
+    ...(await loadSnapshot(supabase)),
+    fetchedAt: Date.now(),
+  }))
 
   const nowMs = Date.now()
   const totalSteps = lessons.reduce((a, l) => a + l.total_steps, 0)
   const students = buildStudents(statRows, totalSteps, nowMs)
   const summary = summarize(students, lessons, nowMs)
-  return { students, lessons, summary, totalSteps, nowMs }
+  return { students, lessons, summary, totalSteps, nowMs, fetchedAt }
 })
 
 export const getActivity = cache(async (days: number = ACTIVITY_DAYS): Promise<DailyActivityRow[]> => {
+  await requireAdmin()
   const supabase = createClient()
-  return adminThen(
-    ttlCache(`activity:${days}`, async () => {
-      const { data, error } = await supabase.rpc('admin_daily_activity', { p_days: days, p_tz: TIMEZONE })
-      if (error) throw new Error(`admin_daily_activity: ${error.message}`)
-      return (data ?? []) as DailyActivityRow[]
-    }),
-  )
+  return ttlCache(`activity:${days}`, async () => {
+    const { data, error } = await supabase.rpc('admin_daily_activity', { p_days: days, p_tz: TIMEZONE })
+    if (error) throw new Error(`admin_daily_activity: ${error.message}`)
+    return (data ?? []) as DailyActivityRow[]
+  })
 })
 
 export async function getStudentSteps(userId: string): Promise<StepDetailRow[]> {

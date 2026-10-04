@@ -78,7 +78,8 @@ Students with exactly the same result share a rank (1, 2, 2, 4 …), shown with 
 - The student app saves only *correct* answers, so the dashboard can't show wrong-answer counts or per-question accuracy.
 - "Who got there first" uses the time a step was saved to the database. If a student works offline, it is recorded when their device next syncs.
 - The student list is fetched in pages of 1,000, so totals stay correct beyond Supabase's default row cap.
-- The server reuses the student numbers for `DATA_CACHE_SECONDS` (30 s, in `src/lib/config.ts`), shared by all admins, so a burst of page views hits the database once. Nothing is polled. The **Refresh** button always fetches fresh numbers.
+- The server reuses the student numbers for `DATA_CACHE_SECONDS` (30 s, in `src/lib/config.ts`), shared by all admins, so a burst of page views hits the database once. For `DATA_STALE_SECONDS` (5 min) after that it still answers instantly with the previous numbers while it refreshes them in the background; the Overview shows when they were last loaded. Nothing is polled. The **Refresh** button always fetches fresh numbers.
+- If a page takes longer than 2 seconds, a "Still loading…" message fades in over the loading skeleton (pure CSS, `.slow-loader` in `globals.css`). Quick loads never show it. The Overview's activity chart streams in separately, so the numbers above it appear without waiting for it.
 - Sessions are checked from the signed token (no Supabase Auth round trip per request); the admin role itself is still read from the database on every page view, and every SQL function re-checks `is_admin()`.
 - CSV exports contain student emails. Handle them as personal data under your privacy statement. Names that begin with `=`, `+`, `-` or `@` are neutralised so they can't run as spreadsheet formulas.
 
