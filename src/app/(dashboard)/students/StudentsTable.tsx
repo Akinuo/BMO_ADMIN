@@ -53,7 +53,7 @@ function SortHeader({
   const active = sortKey === k
   return (
     <th aria-sort={active ? (dir === 1 ? 'ascending' : 'descending') : 'none'} className={className}>
-      <button type="button" onClick={() => onSort(k)} className={`inline-flex items-center gap-1 uppercase tracking-wider hover:text-denim ${active ? 'text-denim' : ''}`}>
+      <button type="button" onClick={() => onSort(k)} className={`inline-flex items-center gap-1r hover:text-denim ${active ? 'text-denim' : ''}`}>
         {label}
         {active ? (dir === 1 ? <IconSortUp className="h-3.5 w-3.5" /> : <IconSortDown className="h-3.5 w-3.5" />) : <span className="h-3.5 w-3.5" />}
       </button>

@@ -114,9 +114,9 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
         )}
       </section>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-3">
+      <div className="mt-4 grid gap-4 lg:grid-cols-3 print:grid-cols-3">
         {/* Activity */}
-        <section className="card p-5 lg:col-span-2" aria-label="Recent activity">
+        <section className="card p-5 lg:col-span-2 print:col-span-2" aria-label="Recent activity">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <h2 className="card-title">Activity, last {range} days</h2>
@@ -189,9 +189,9 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
         </section>
       </div>
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-3">
+      <div className="mt-4 grid gap-4 lg:grid-cols-3 print:grid-cols-3">
         {/* Lesson funnel */}
-        <section className="card p-5 lg:col-span-2" aria-label="Lesson completion">
+        <section className="card p-5 lg:col-span-2 print:col-span-2" aria-label="Lesson completion">
           <h2 className="card-title">Lesson completion</h2>
           <p className="mb-4 text-xs text-muted">Lessons unlock in order, so the bars show where students slow down.</p>
           {lessons.length ? <LessonFunnel lessons={lessons} totalStudents={summary.total} /> : <EmptyState title="No lessons found" />}

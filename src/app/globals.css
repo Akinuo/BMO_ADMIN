@@ -152,5 +152,6 @@ a, button, input, select, summary, label { touch-action: manipulation; }
   .tbl th, .tbl td { white-space: normal; }
   .tbl th svg { display: none; }
   .print-landscape { page: wide; }
+  .lesson-rail > li { break-inside: avoid; }
   .tbl .w-52, .tbl .w-16, .tbl .w-20 { width: auto !important; }
 }
