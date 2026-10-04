@@ -1,9 +1,10 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { ActivityChart, LessonFunnel } from '@/components/charts'
-import { IconAlert, IconArrowRight, IconCertificate, IconCheck, IconLayers, IconPulse, IconUsers } from '@/components/icons'
+import { IconAlert, IconArrowRight, IconCheck } from '@/components/icons'
+import PrintButton from '@/components/PrintButton'
 import RefreshButton from '@/components/RefreshButton'
-import { EmptyState, KpiCard, PageHeader, ProgressBar, RankBadge, StudentLink } from '@/components/ui'
+import { EmptyState, KpiStrip, PageHeader, ProgressBar, RankBadge, StudentLink } from '@/components/ui'
 import { ACTIVE_DAYS, ACTIVITY_DAYS, STALLED_DAYS } from '@/lib/config'
 import { getActivity, getDashboard } from '@/lib/data'
 import { formatDateTime, pct, plural, timeAgo } from '@/lib/format'
@@ -52,49 +53,33 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
       <PageHeader
         title="Overview"
         subtitle={<>Live from your database &middot; updated {formatDateTime(new Date(nowMs).toISOString())}</>}
-        actions={<RefreshButton />}
+        actions={<><PrintButton label="Print report" /><RefreshButton /></>}
       />
 
       {/* KPIs */}
-      <section aria-label="Key numbers" className="grid grid-cols-2 gap-3 lg:grid-cols-5">
-        <div className="col-span-2 lg:col-span-1">
-          <KpiCard
-            accent
-            label="Total students"
-            value={summary.total.toLocaleString('en-PH')}
-            hint={summary.newThisWeek ? `+${summary.newThisWeek} joined in the last ${ACTIVE_DAYS} days` : `None new in the last ${ACTIVE_DAYS} days`}
-            icon={<IconUsers className="h-4 w-4" />}
-          />
-        </div>
-        <KpiCard
-          label={`Active · ${ACTIVE_DAYS} days`}
-          value={summary.activeThisWeek.toLocaleString('en-PH')}
-          hint={hasStudents ? `${pct(summary.activeThisWeek, summary.total)}% of students` : '—'}
-          icon={<IconPulse className="h-4 w-4" />}
-        />
-        <KpiCard
-          label="Average progress"
-          value={`${summary.avgProgress}%`}
-          hint={`of ${plural(summary.totalSteps, 'step')}, across all students`}
-          icon={<IconLayers className="h-4 w-4" />}
-        />
-        <KpiCard
-          label="Finished all lessons"
-          value={summary.finishedCourse.toLocaleString('en-PH')}
-          hint={hasStudents ? `${pct(summary.finishedCourse, summary.total)}% of students` : '—'}
-          icon={<IconCheck className="h-4 w-4" />}
-        />
-        <KpiCard
-          label="Certified"
-          value={summary.certified.toLocaleString('en-PH')}
-          hint={
-            summary.assessmentPassRate !== null
+      <KpiStrip
+        items={[
+          {
+            hero: true, label: 'Total students', value: summary.total.toLocaleString('en-PH'),
+            hint: summary.newThisWeek ? `+${summary.newThisWeek} joined in the last ${ACTIVE_DAYS} days` : `None new in the last ${ACTIVE_DAYS} days`,
+          },
+          {
+            label: `Active in ${ACTIVE_DAYS} days`, value: summary.activeThisWeek.toLocaleString('en-PH'),
+            hint: hasStudents ? `${pct(summary.activeThisWeek, summary.total)}% of students` : '—', bar: pct(summary.activeThisWeek, summary.total),
+          },
+          { label: 'Average progress', value: `${summary.avgProgress}%`, hint: `of ${plural(summary.totalSteps, 'step')}`, bar: summary.avgProgress },
+          {
+            label: 'Finished all lessons', value: summary.finishedCourse.toLocaleString('en-PH'),
+            hint: hasStudents ? `${pct(summary.finishedCourse, summary.total)}% of students` : '—', bar: pct(summary.finishedCourse, summary.total),
+          },
+          {
+            label: 'Certified', value: summary.certified.toLocaleString('en-PH'), tone: 'bg-green', bar: pct(summary.certified, summary.total),
+            hint: summary.assessmentPassRate !== null
               ? `${summary.assessmentPassRate}% pass rate · ${plural(summary.assessmentTaken, 'attempt')}`
-              : 'No assessment taken yet'
-          }
-          icon={<IconCertificate className="h-4 w-4" />}
-        />
-      </section>
+              : 'No assessment taken yet',
+          },
+        ]}
+      />
 
       {/* Status breakdown */}
       <section aria-label="Where students are" className="card mt-4 p-5">
@@ -137,7 +122,7 @@ export default async function OverviewPage({ searchParams }: { searchParams: { r
               <h2 className="card-title">Activity, last {range} days</h2>
               <p className="text-xs text-muted">Steps completed per day</p>
             </div>
-            <nav aria-label="Time range" className="flex gap-1 rounded-full bg-chalk p-1">
+            <nav aria-label="Time range" className="flex gap-1 rounded-full bg-chalk p-1 print:hidden">
               {RANGES.map(r => (
                 <Link
                   key={r}

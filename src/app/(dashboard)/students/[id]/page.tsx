@@ -1,8 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { IconArrowLeft, IconCertificate, IconCheck } from '@/components/icons'
-import { Avatar, ProgressBar, RankBadge, StalledChip, StatusChip } from '@/components/ui'
+import { IconArrowLeft, IconCertificate, IconCheck, IconChevron } from '@/components/icons'
+import PrintButton from '@/components/PrintButton'
+import { Avatar, PrintMasthead, ProgressBar, RankBadge, StalledChip, StatusChip } from '@/components/ui'
 import { getDashboard, getStudentSteps } from '@/lib/data'
 import { formatDate, formatDateTime, plural, timeAgo } from '@/lib/format'
 import type { StepDetailRow } from '@/lib/types'
@@ -45,6 +46,8 @@ export default async function StudentPage({ params }: { params: { id: string } }
   if (!s) notFound()
 
   const lessons = group(await getStudentSteps(s.id))
+  // the lesson they're working on right now opens by default
+  const currentIdx = lessons.findIndex(l => l.steps.some(st => !st.completed_at))
   const rankedCount = students.filter(x => x.rank !== null).length
   const recent = lessons
     .flatMap(l => l.steps.filter(st => st.completed_at).map(st => ({ ...st, lessonTitle: l.title })))
@@ -53,9 +56,13 @@ export default async function StudentPage({ params }: { params: { id: string } }
 
   return (
     <>
-      <Link href="/students" className="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-muted hover:text-denim">
-        <IconArrowLeft className="h-4 w-4" /> All students
-      </Link>
+      <PrintMasthead title="Student progress report" />
+      <div className="mb-4 flex items-center justify-between gap-3 print:hidden">
+        <Link href="/students" className="inline-flex items-center gap-1.5 text-sm font-medium text-muted hover:text-denim">
+          <IconArrowLeft className="h-4 w-4" /> All students
+        </Link>
+        <PrintButton label="Print report" />
+      </div>
 
       {/* Header */}
       <section className="card flex flex-wrap items-center gap-4 p-5">
@@ -106,40 +113,51 @@ export default async function StudentPage({ params }: { params: { id: string } }
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
         {/* Lessons */}
         <section className="card p-5 lg:col-span-2" aria-label="Lessons">
-          <h2 className="card-title">Lesson by lesson</h2>
-          <p className="mb-4 text-xs text-muted">Each dot is one step (a step is done once its quiz question is answered correctly).</p>
-          <ol className="grid gap-4">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+            <h2 className="card-title">Lesson by lesson</h2>
+            <p className="text-xs tabular-nums text-muted">{s.lessons} of {summary.totalLessons} lessons complete</p>
+          </div>
+          <p className="mb-4 text-xs text-muted">Open a lesson to see each step and when it was finished. A step is done once its quiz question is answered correctly.</p>
+          <ol className="lesson-rail grid gap-2.5">
             {lessons.map((l, i) => {
               const done = l.steps.filter(st => st.completed_at).length
               const complete = done === l.steps.length && l.steps.length > 0
               const last = l.steps.map(st => st.completed_at).filter(Boolean).sort().pop() ?? null
               return (
-                <li key={l.slug} className="grid grid-cols-[auto_1fr] items-center gap-x-3 gap-y-1.5">
+                <li key={l.slug}>
                   <span
-                    className={`flex h-8 w-8 items-center justify-center rounded-full border font-display text-sm font-bold ${
-                      complete ? 'border-green bg-green text-white' : done ? 'border-denim bg-denim-light text-denim' : 'border-border bg-chalk text-muted'
+                    className={`absolute left-0 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 font-display text-sm font-bold ${
+                      complete ? 'border-green bg-green text-white' : done ? 'border-denim bg-paper text-denim' : 'border-border bg-chalk text-muted'
                     }`}
                   >
                     {complete ? <IconCheck className="h-4 w-4" /> : i + 1}
                   </span>
-                  <div className="flex min-w-0 flex-wrap items-baseline justify-between gap-x-3">
-                    <p className="min-w-0 truncate text-sm font-semibold text-ink">{l.title}</p>
-                    <p className="shrink-0 text-xs text-muted">
-                      {done}/{l.steps.length} steps{last ? <> · {formatDate(last)}</> : ''}
-                    </p>
-                  </div>
-                  <span />
-                  <ul className="flex gap-1.5" aria-label={`${done} of ${l.steps.length} steps done`}>
-                    {l.steps.map(st => (
-                      <li
-                        key={st.step_id}
-                        title={`${st.step_title}${st.completed_at ? ` — done ${formatDateTime(st.completed_at)}` : ' — not done'}`}
-                        className={`h-3 flex-1 rounded-full ${st.completed_at ? (complete ? 'bg-green' : 'bg-denim') : 'bg-denim-light'}`}
-                      >
-                        <span className="sr-only">{st.step_title}: {st.completed_at ? 'done' : 'not done'}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <details open={i === currentIdx} className="group rounded-lg border border-border bg-paper open:border-denim/30 open:shadow-sm">
+                    <summary className="flex cursor-pointer list-none items-center gap-3 rounded-lg px-4 py-3 hover:bg-denim-light/40 [&::-webkit-details-marker]:hidden">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold text-ink">{l.title}</p>
+                        <div className="mt-2 flex gap-1" aria-hidden="true">
+                          {l.steps.map(st => (
+                            <span key={st.step_id} className={`h-1.5 flex-1 rounded-full ${st.completed_at ? (complete ? 'bg-green' : 'bg-denim') : 'bg-denim-light'}`} />
+                          ))}
+                        </div>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <p className="text-sm font-semibold tabular-nums text-ink">{done}/{l.steps.length} <span className="font-normal text-muted">steps</span></p>
+                        <p className="text-xs text-muted">{complete ? `Finished ${formatDate(last)}` : done ? `Last step ${formatDate(last)}` : 'Not started'}</p>
+                      </div>
+                      <IconChevron className="h-4 w-4 shrink-0 text-muted transition-transform group-open:rotate-180 print:hidden" />
+                    </summary>
+                    <ol className="grid gap-px border-t border-border px-4 py-2">
+                      {l.steps.map(st => (
+                        <li key={st.step_id} className="flex items-center gap-3 py-1.5 text-sm">
+                          <span className={`h-2.5 w-2.5 shrink-0 rounded-full ${st.completed_at ? (complete ? 'bg-green' : 'bg-denim') : 'border border-border bg-chalk'}`} />
+                          <span className={`min-w-0 flex-1 ${st.completed_at ? 'text-ink' : 'text-muted'}`}>{st.step_title}</span>
+                          <span className="shrink-0 text-xs tabular-nums text-muted">{st.completed_at ? formatDateTime(st.completed_at) : 'Not done'}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  </details>
                 </li>
               )
             })}

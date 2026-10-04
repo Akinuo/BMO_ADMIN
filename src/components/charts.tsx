@@ -77,7 +77,7 @@ export function LessonFunnel({ lessons, totalStudents }: { lessons: LessonStatRo
                   <span className="font-medium text-ink">{l.title}</span>
                 </span>
                 <span className="shrink-0 text-xs text-muted">
-                  <b className="font-semibold text-ink">{l.students_completed}</b> finished
+                  <b className="font-semibold tabular-nums text-ink">{done}%</b> finished ({l.students_completed})
                   {l.students_started - l.students_completed > 0 && <> · {l.students_started - l.students_completed} in progress</>}
                 </span>
               </div>

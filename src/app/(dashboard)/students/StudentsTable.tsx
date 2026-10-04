@@ -1,6 +1,8 @@
 'use client'
 import Link from 'next/link'
-import { useDeferredValue, useMemo, useState } from 'react'
+import { useDeferredValue, useEffect, useMemo, useState } from 'react'
+import { flushSync } from 'react-dom'
+import PrintButton from '@/components/PrintButton'
 import { IconChevron, IconDownload, IconSearch, IconSortDown, IconSortUp } from '@/components/icons'
 import { EmptyState, ProgressBar, RankBadge, StalledChip, StatusChip, StudentLink } from '@/components/ui'
 import { PAGE_SIZE } from '@/lib/config'
@@ -83,7 +85,16 @@ export default function StudentsTable({
 
   const pages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE))
   const safePage = Math.min(page, pages - 1)
-  const visible = rows.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE)
+  const [printing, setPrinting] = useState(false)
+  // Printing shows every filtered row, not just the current page (works for Ctrl+P too).
+  useEffect(() => {
+    const before = () => flushSync(() => setPrinting(true))
+    const after = () => setPrinting(false)
+    window.addEventListener('beforeprint', before)
+    window.addEventListener('afterprint', after)
+    return () => { window.removeEventListener('beforeprint', before); window.removeEventListener('afterprint', after) }
+  }, [])
+  const visible = printing ? rows : rows.slice(safePage * PAGE_SIZE, safePage * PAGE_SIZE + PAGE_SIZE)
 
   function onSort(k: SortKey) {
     if (k === sortKey) setDir(d => (d === 1 ? -1 : 1))
@@ -118,7 +129,7 @@ export default function StudentsTable({
   return (
     <div className="card overflow-hidden">
       {/* Toolbar */}
-      <div className="grid gap-3 border-b border-border p-4">
+      <div className="grid gap-3 border-b border-border p-4 print:hidden">
         <div className="flex flex-wrap items-center gap-3">
           <label className="relative min-w-[220px] flex-1">
             <span className="sr-only">Search students</span>
@@ -150,6 +161,7 @@ export default function StudentsTable({
             Export CSV
             <span className="text-xs font-medium text-muted">({rows.length})</span>
           </button>
+          <PrintButton label="Print list" />
         </div>
         <div className="flex flex-wrap gap-1.5" role="group" aria-label="Filter by status">
           {FILTERS.map(f => (
@@ -246,7 +258,7 @@ export default function StudentsTable({
 
       {/* Footer / pagination */}
       {rows.length > 0 && (
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-chalk/60 px-4 py-3 text-xs text-muted">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-chalk/60 px-4 py-3 text-xs text-muted print:hidden">
           <span>
             Showing {safePage * PAGE_SIZE + 1}–{Math.min(rows.length, (safePage + 1) * PAGE_SIZE)} of {plural(rows.length, 'student')}
             {' · '}

@@ -41,7 +41,7 @@ export default function Shell({ name, email, children }: { name: string; email: 
   return (
     <div className="min-h-dvh">
       {/* Desktop sidebar */}
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col overflow-hidden bg-denim text-white lg:flex">
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col overflow-hidden bg-denim text-white lg:flex print:hidden">
         <SpoolMark className="absolute -bottom-8 -right-6 h-56 w-56 -rotate-12 text-white/[0.06]" />
         <Link href="/" className="relative flex items-center gap-3 px-5 pb-4 pt-5">
           <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-paper">
@@ -83,7 +83,7 @@ export default function Shell({ name, email, children }: { name: string; email: 
       </aside>
 
       {/* Mobile / tablet top bar */}
-      <header className="sticky top-0 z-30 bg-denim text-white shadow-nav lg:hidden">
+      <header className="sticky top-0 z-30 bg-denim text-white shadow-nav lg:hidden print:hidden">
         <div className="flex items-center justify-between gap-3 px-4 py-2.5">
           <Link href="/" className="flex items-center gap-2.5">
             <span className="flex h-8 w-8 items-center justify-center rounded-md bg-paper">
@@ -113,8 +113,8 @@ export default function Shell({ name, email, children }: { name: string; email: 
         </nav>
       </header>
 
-      <main id="main" className="lg:pl-60">
-        <div className="mx-auto max-w-[1180px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{children}</div>
+      <main id="main" className="lg:pl-60 print:pl-0">
+        <div className="mx-auto max-w-[1180px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8 print:max-w-none print:p-0">{children}</div>
       </main>
     </div>
   )
