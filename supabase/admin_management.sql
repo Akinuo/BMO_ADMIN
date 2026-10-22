@@ -1,4 +1,4 @@
--- B.M.O Admin Dashboard — admin management.
+-- SewTech Learn Admin Dashboard — admin management.
 --
 -- Run ONCE in the Supabase SQL Editor (same project), after admin_dashboard.sql. Safe to re-run.
 --

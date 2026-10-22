@@ -1,4 +1,4 @@
--- B.M.O Admin Dashboard — speed-ups. Run ONCE in the Supabase SQL Editor (same project). Safe to re-run.
+-- SewTech Learn Admin Dashboard — speed-ups. Run ONCE in the Supabase SQL Editor (same project). Safe to re-run.
 -- Run it AFTER admin_dashboard.sql. The site works without it, just slower.
 --
 --   * Indexes on the columns the dashboard queries join and group by, so they stay fast as

@@ -1,6 +1,6 @@
--- B.M.O Admin Dashboard — database support.
+-- SewTech Learn Admin Dashboard — database support.
 --
--- Run ONCE in the Supabase SQL Editor of the SAME project the student site (VAL / B.M.O) uses,
+-- Run ONCE in the Supabase SQL Editor of the SAME project the student site (VAL / SewTech Learn) uses,
 -- after 0001_init.sql and 0002_assessment.sql have been run. Safe to re-run.
 --
 -- What this does:

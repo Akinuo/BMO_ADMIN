@@ -8,8 +8,8 @@ import type { Metadata, Viewport } from 'next'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: { default: 'B.M.O Admin', template: '%s — B.M.O Admin' },
-  description: 'Admin dashboard for tracking student progress in Basic Machine Operation (B.M.O).',
+  title: { default: 'SewTech Learn Admin', template: '%s — SewTech Learn Admin' },
+  description: 'Admin dashboard for tracking student progress in SewTech Learn.',
   robots: { index: false, follow: false, nocache: true },
 }
 

@@ -109,12 +109,12 @@ export default function LoginForm() {
           <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-paper">
             <Image src="/logo-mark.png" alt="" width={30} height={30} className="h-[30px] w-[30px] object-contain" />
           </span>
-          <span className="font-display text-lg font-bold">B.M.O Admin</span>
+          <span className="font-display text-lg font-bold">SewTech Learn Admin</span>
         </div>
         <div className="relative max-w-md">
           <h1 className="font-display text-3xl font-bold leading-tight">See how every student is doing.</h1>
           <p className="mt-3 text-sm leading-relaxed text-white/70">
-            A separate dashboard for instructors. It reads the same Basic Machine Operation database as the student app,
+            A separate dashboard for instructors. It reads the same SewTech Learn database as the student app,
             read-only, and never changes a student&rsquo;s record.
           </p>
           <ul className="mt-8 grid gap-3">
@@ -128,7 +128,7 @@ export default function LoginForm() {
             ))}
           </ul>
         </div>
-        <p className="relative text-xs text-white/40">Basic Machine Operation &middot; BTLED Home Economics</p>
+        <p className="relative text-xs text-white/40">SewTech Learn &middot; BTLED Home Economics</p>
       </div>
 
       {/* Form */}
@@ -138,7 +138,7 @@ export default function LoginForm() {
             <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-denim">
               <Image src="/logo-mark.png" alt="" width={26} height={26} className="h-[26px] w-[26px] rounded-sm bg-paper object-contain p-px" />
             </span>
-            <span className="font-display text-lg font-bold text-denim">B.M.O Admin</span>
+            <span className="font-display text-lg font-bold text-denim">SewTech Learn Admin</span>
           </div>
 
           <h2 className="page-title">Admin sign in</h2>

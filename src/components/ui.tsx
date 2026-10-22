@@ -13,7 +13,7 @@ export function PrintMasthead({ title, subtitle }: { title: string; subtitle?: R
         {subtitle && <p className="mt-0.5 text-xs text-muted">{subtitle}</p>}
       </div>
       <div className="shrink-0 text-right text-xs leading-snug text-muted">
-        <p className="font-semibold text-ink">B.M.O Admin</p>
+        <p className="font-semibold text-ink">SewTech Learn Admin</p>
         <p>Printed {formatDateTime(new Date().toISOString())}</p>
         <p>Contains student details</p>
       </div>

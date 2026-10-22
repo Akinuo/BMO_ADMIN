@@ -1,6 +1,6 @@
-# B.M.O Admin Dashboard
+# SewTech Learn Admin Dashboard
 
-A **separate website** for instructors to track student progress in the B.M.O (Basic Machine Operation / VAL Guide) app.
+A **separate website** for instructors to track student progress in the SewTech Learn (formerly B.M.O / VAL Guide) app.
 Same stack as the student app — Next.js 14 (App Router) + TypeScript + Tailwind + Supabase — and it reads the **same Supabase database**, read-only.
 
 | Page | What it shows |

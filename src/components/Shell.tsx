@@ -48,7 +48,7 @@ export default function Shell({ name, email, children }: { name: string; email: 
             <Image src="/logo-mark.png" alt="" width={28} height={28} className="h-7 w-7 object-contain" />
           </span>
           <span className="leading-tight">
-            <span className="block font-display text-base font-bold">B.M.O Admin</span>
+            <span className="block font-display text-base font-bold">SewTech Learn Admin</span>
             <span className="block text-xs text-white/60">Student progress</span>
           </span>
         </Link>
@@ -89,7 +89,7 @@ export default function Shell({ name, email, children }: { name: string; email: 
             <span className="flex h-8 w-8 items-center justify-center rounded-md bg-paper">
               <Image src="/logo-mark.png" alt="" width={22} height={22} className="h-[22px] w-[22px] object-contain" />
             </span>
-            <span className="font-display text-base font-bold">B.M.O Admin</span>
+            <span className="font-display text-base font-bold">SewTech Learn Admin</span>
           </Link>
           <SignOut compact />
         </div>
